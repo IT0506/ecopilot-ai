@@ -1,7 +1,119 @@
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 function Dashboard() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get result from navigation OR localStorage (supports page refresh)
+  let result = location.state;
+
+  if (!result) {
+    const saved = localStorage.getItem("carbonResult");
+
+    if (saved) {
+      try {
+        result = JSON.parse(saved);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  // No data available
+  if (!result) {
+    return (
+      <>
+        <Navbar />
+
+        <div className="dashboard-container">
+
+          <h1>No Assessment Found</h1>
+
+          <p>
+            Please complete the carbon assessment first.
+          </p>
+
+          <button
+            className="btn"
+            onClick={() => navigate("/questionnaire")}
+          >
+            Start Assessment
+          </button>
+
+        </div>
+
+        <Footer />
+      </>
+    );
+  }
+
+  // ----------------------------
+  // Grade Descriptions
+  // ----------------------------
+
+  const gradeDescriptions = {
+    A: "Excellent sustainability performance.",
+    B: "Good performance. Small improvements can help.",
+    C: "Average sustainability. Improvement recommended.",
+    D: "High carbon emissions detected.",
+    E: "Very high emissions. Immediate action recommended.",
+  };
+
+  // ----------------------------
+  // Progress Calculation
+  // ----------------------------
+
+  const progressMap = {
+    A: 100,
+    B: 80,
+    C: 60,
+    D: 40,
+    E: 20,
+  };
+
+  const progress =
+    progressMap[result.sustainabilityGrade] || 0;
+
+  // ----------------------------
+  // Emission Source Icons
+  // ----------------------------
+
+  const emissionIcons = {
+    Transportation: "🚗",
+    Electricity: "⚡",
+    Diet: "🍽",
+    "Air Travel": "✈",
+    "Plastic Usage": "🛍",
+  };
+
+  const sourceIcon =
+    emissionIcons[result.majorEmissionSource] || "🌍";
+
+  // ----------------------------
+  // Progress Color
+  // ----------------------------
+
+  const progressColor = () => {
+    switch (result.sustainabilityGrade) {
+      case "A":
+        return "#16a34a";
+
+      case "B":
+        return "#22c55e";
+
+      case "C":
+        return "#facc15";
+
+      case "D":
+        return "#f97316";
+
+      default:
+        return "#ef4444";
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -13,107 +125,163 @@ function Dashboard() {
         </h1>
 
         <p className="dashboard-subtitle">
-          Here's an overview of your sustainability journey.
+          Your personalized sustainability report.
         </p>
+
+        {/* Cards */}
 
         <div className="dashboard-cards">
 
           <div className="dashboard-card">
+
             <h3>Carbon Score</h3>
-            <h1>612 kg</h1>
-            <p>Estimated yearly CO₂ emissions</p>
+
+            <h1>
+              {result.carbonScore.toFixed(2)} kg
+            </h1>
+
+            <p>
+              Estimated carbon footprint
+            </p>
+
           </div>
 
           <div className="dashboard-card">
+
             <h3>Sustainability Grade</h3>
-            <h1>B</h1>
-            <p>Good, but there's room for improvement.</p>
+
+            <h1>{result.sustainabilityGrade}</h1>
+
+            <p>
+              {
+                gradeDescriptions[
+                  result.sustainabilityGrade
+                ]
+              }
+            </p>
+
           </div>
 
           <div className="dashboard-card">
+
             <h3>Main Emission Source</h3>
-            <h1>🚗 Transport</h1>
-            <p>52% of your emissions</p>
+
+            <h1>
+              {sourceIcon}
+            </h1>
+
+            <p>
+              {result.majorEmissionSource}
+            </p>
+
           </div>
 
           <div className="dashboard-card">
+
             <h3>Trees Needed</h3>
-            <h1>31 🌳</h1>
-            <p>To offset your annual emissions</p>
-          </div>
 
-        </div>
-
-        <div className="dashboard-section">
-
-          <h2>🤖 AI Recommendations</h2>
-
-          <div className="recommendation">
-
-            <h3>Use Public Transport</h3>
+            <h1>
+              {result.treesNeeded} 🌳
+            </h1>
 
             <p>
-              Switching to public transport twice a week can significantly
-              reduce your yearly emissions.
-            </p>
-
-          </div>
-
-          <div className="recommendation">
-
-            <h3>Reduce Electricity Usage</h3>
-
-            <p>
-              Turning off unused appliances can save energy and lower your
-              carbon footprint.
-            </p>
-
-          </div>
-
-          <div className="recommendation">
-
-            <h3>Carry a Reusable Bottle</h3>
-
-            <p>
-              Reducing single-use plastic helps both the environment and your
-              sustainability score.
+              Trees required to offset emissions
             </p>
 
           </div>
 
         </div>
 
+        {/* Recommendation */}
+
         <div className="dashboard-section">
 
-          <h2>🎯 Weekly Goal</h2>
+          <h2>
+            🤖 AI Recommendation
+          </h2>
+
+          <div className="recommendation">
+
+            <h3>
+              Personalized Advice
+            </h3>
+
+            <p>
+              {result.aiRecommendation}
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* Weekly Goal */}
+
+        <div className="dashboard-section">
+
+          <h2>
+            🎯 Sustainability Goal
+          </h2>
 
           <div className="goal-card">
 
-            <h3>Walk or Cycle 15 km This Week</h3>
+            <h3>
+              Improve Your Sustainability Grade
+            </h3>
 
             <p>
-              Completing this goal could reduce approximately
-              <strong> 12 kg CO₂</strong>.
+              Follow the recommendation above to reduce
+              your emissions and improve your grade in
+              the next assessment.
             </p>
 
           </div>
 
         </div>
 
+        {/* Progress */}
+
         <div className="dashboard-section">
 
-          <h2>📈 Progress</h2>
+          <h2>
+            📈 Sustainability Progress
+          </h2>
 
           <div className="progress-bar">
 
             <div
               className="progress-fill"
-              style={{ width: "72%" }}
+              style={{
+                width: `${progress}%`,
+                background: progressColor(),
+              }}
             ></div>
 
           </div>
 
-          <p>72% of your weekly sustainability goal completed.</p>
+          <p>
+            {progress}% Sustainable Lifestyle Score
+          </p>
+
+        </div>
+
+        {/* Buttons */}
+
+        <div
+          style={{
+            marginTop: "40px",
+            display: "flex",
+            gap: "15px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+
+          <button
+            className="btn"
+            onClick={() => navigate("/questionnaire")}
+          >
+            New Assessment
+          </button>
 
         </div>
 
@@ -125,3 +293,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
