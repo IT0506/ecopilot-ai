@@ -9,3 +9,8 @@ export const getCarbonHistory = async () => {
   const response = await api.get("/history");
   return response.data;
 };
+
+export const getDashboard = async () => {
+  const response = await api.get("/dashboard");
+  return response.data;
+};
